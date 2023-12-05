@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="sdfc-demo-exampleFlow" doc:id="c8b551b0-d810-4ffa-a1d4-47513832a44b" >
+		<file:listener doc:name="On New or Updated File" doc:id="945a42f6-56ed-4605-a328-41dad4322af9" directory="src\main\resources\input" autoDelete="true" watermarkMode="MODIFIED_TIMESTAMP" moveToDirectory="C:\Users\p130\Documents\Bmule\sdfc-demo-example\src\main\resources\output" config-ref="File_Config">
+			<scheduling-strategy >
+				<fixed-frequency frequency="20000" />
+			</scheduling-strategy>
+		</file:listener>
+		<batch:job jobName="sdfc-demo-exampleBatch_Job" doc:id="b5e2f831-94a8-4b85-a400-f162189e783e">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="009139ac-208f-40d3-b899-b2e1917c5bdb">
+					<ee:transform doc:name="Transform Message" doc:id="7d405103-589c-4634-b2f9-41a1e4b1e322" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload] map ((item, index) ->
+{
+    "FirstName": item.FirstName,
+    "LastName":  item.LastName,
+    "Email":  item.Email,
+    "Phone":  item.Phone,
+    "Address__c":  item.Address__c,
+    "CompanyName__c":  item.CompanyName__c
+} ) ]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="Logger" doc:id="224d8f02-95b8-45ab-962f-908e430d464d" message="#[payload]"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="34f04e6f-0c32-45e6-bc26-c5af189dea25" size="2" preserveMimeTypes="true">
+						<ee:transform doc:name="Transform Message" doc:id="e67b6a0d-8566-4e20-b77f-b7de8d5a6138" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+flatten(payload)]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<try doc:name="Try" doc:id="8e528e97-7185-459c-89ee-c3a7e65b8536" >
+							<salesforce:create doc:name="Create" doc:id="47ca357f-eb94-4c30-a1c6-a97c26d0ee0d" type="Contact" config-ref="Salesforce_Config">
+					</salesforce:create>
+							<error-handler doc:id="d556867b-83b6-498f-9657-5aaa41c74d60">
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="abb61e62-b0eb-492d-aa4b-396103eaec01" type="SALESFORCE:CONNECTIVITY" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="9f3aa38f-26ed-4a70-9dfc-1cb99d01dfc4" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="e97ccc76-fdac-4de8-82a5-ac9062901e85" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription
+}
+]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="Error Continue" doc:id="33950e15-7d33-42f5-a245-80c73a71ad0a" type="SALESFORCE:INVALID_INPUT" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="74c5fec9-8272-497b-b2b1-bc427314e8f7" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="77e8cd0f-43ab-4666-8b71-9f1c2c8a5a55" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7d1658b0-798d-4c0a-adff-951dec8a9be5" type="SALESFORCE:INVALID_RESPONSE" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="d237a81a-2755-491f-9815-a5fd6c0833e3" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="82a195d9-d7e2-4a73-9b17-34e0ab1fef10" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6d5a371d-56ee-451b-a166-7ef4d8e0194e" type="SALESFORCE:LIMIT_EXCEEDED" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="de8c173d-bff8-405b-8dc6-d4f096d1e2b5" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="6c2ae035-48cb-477d-bbe3-16fb4f7982a8">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d6558edd-f9c1-4c8c-a43b-67f4297835c9" type="SALESFORCE:MUTUAL_AUTHENTICATION_FAILED" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="a343f80c-9e4a-4846-8e6d-2f28ecf4d813" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="f7bc968c-e94a-4608-8803-e60d54ffce05" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="17178925-e5ee-456a-9b9c-17293e6a149b" type="SALESFORCE:NOT_FOUND" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="cc836ba7-0b6e-467a-b28e-c63c7ab16c08" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="ade70053-7470-47a2-b7f2-b9aa26b1900d" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b0bc9498-5227-4f52-ab1f-386fe3130096" type="SALESFORCE:RETRY_EXHAUSTED" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="5caded09-170d-48be-92e2-f57b74f5878d" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="eb3f8c90-ebef-40b8-bda1-0bf1841d98f8" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="001b1988-6008-474c-9690-64802a133264" type="SALESFORCE:TIMEOUT" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="7befcadb-751a-463e-84de-e9117726248e" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="0037406a-b9cb-44ca-8010-731b26dfedb9" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="dda43bee-8b8f-49a2-8bd5-4560cfb30cba" type="STREAM_MAXIMUM_SIZE_EXCEEDED" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="68124676-9b31-4c88-a526-87c98aa2c448" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="1faa2f62-fb6d-4faa-8f8c-ff7bd6abc2f5" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+								<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d8507acd-da13-4a66-8165-69de7f388307" type="MULE:EXPRESSION" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="97be5303-bb5d-4d9e-89fb-94052b2e855a" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="9f7677b0-1e70-4d2c-a25d-c97c873c36a0" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-propagate>
+								<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="306eac45-387b-4423-92f1-1c0db1a01a20" type="ANY" >
+									<set-variable value="#[500]" doc:name="Set Variable" doc:id="b434982d-7091-4479-be38-ce417f1b7d41" variableName="httpstatus " />
+									<ee:transform doc:name="Transform Message" doc:id="cc6858ea-a2df-4128-895e-e9a59e702ea7" >
+										<ee:message >
+											<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Message":error.detailedDescription,
+	
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								</on-error-continue>
+							</error-handler>
+						</try>
+						<ee:transform doc:name="Transform Message" doc:id="5bac74e6-00ce-493c-8111-eaf98b9ebfc2">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="426e972b-5a7b-4564-983a-9bfe816841a6" message='#["Record created"]' />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="120f1651-3101-4b28-ad2d-cae3ab6674ce" message="Job Completed"/>
+			</batch:on-complete>
+		</batch:job>
+		<logger level="INFO" doc:name="Logger" doc:id="2deae6a9-9416-4d8f-b03f-1ec37b88d0e2" />
+		
+		
+		
+		
+		
+	</flow>
+</mule>

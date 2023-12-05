@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="new-test-suite.xml" />
+	<munit:test name="sdfc-demo-example-error-mule-expression" doc:id="44a27f04-b1d5-4e9d-85db-9eca36c9d2e4" description="Test">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="f20817f8-f63b-4ea6-976a-c162d0263883" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="MULE:EXPRESSION" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+
+
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="9b42627c-a59e-4a00-9f06-1504726d282d">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="656daf71-9532-4041-a951-6b99801c0a6c" name="sdfc-demo-exampleFlow"/>
+			<munit-tools:sleep time="1" doc:name="Sleep" doc:id="7694d625-f7d5-4621-964e-444d4f4b12b9" timeUnit="MINUTES" />
+		
+</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="308f9093-fab7-4c8a-a926-13bf0ca5e16a" processor="salesforce:create" times="2">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="sdfc-demo-example-error-connectivity" doc:id="f143ac12-15c8-46db-8cdb-2bf2d7dd07e8">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="fbcf4ac7-bd58-4589-b547-abca9d251259" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="8b48887c-5e12-4c73-85f0-3b1766b3aa81">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="cb852a58-56e5-44cf-a786-4dbe02b04efb" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="469fba4e-9dba-456b-b6db-02c6ded22eb1" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="bc501a1f-d9a4-4a2d-9079-742c7fdd70d6" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-invalid-input" doc:id="ae75b378-5b5d-429b-b899-83e19a7ffc80">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="35003efa-dcfd-4b21-a06f-b079fd3a14cc" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:INVALID_INPUT" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="36ffd1fd-a089-4ab9-ba06-8e44b1722638">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="8c13a9fe-fe5e-4436-abde-ba20f7ffde3f" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="cc74c1fe-df59-4b11-a992-5053f66b92e7" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="06cdd9b6-6654-445f-939b-fc6558ebe9ac" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-invalid-response" doc:id="751a6de1-f4cd-4c5d-916a-5e6fca7b0e31" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="81b7922e-241f-4d60-8b0e-500eedaa62c7" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:INVALID_RESPONSE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="3eaf66b4-4758-46ef-80ed-06b3a5bb8126">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="fdf06761-a643-432f-bc4f-ec14e7370344" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="76f22e65-0328-4073-9f70-547cf262dcf2" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="83ba097e-fc0f-43fb-832a-365549c055a6" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-limit-exceeded" doc:id="fca98c69-069d-4b23-a133-c471e956614f" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="39d09547-7305-4b21-8989-4fb210e19c94" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:LIMIT_EXCEEDED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="43132f16-f8cd-4961-8820-05d1ba46a0d8">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="307593ac-41d1-4a19-8bb3-72154b24142c" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="4e55c6d1-7d7d-4809-bac2-80edd1f00d00" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="d3b0f444-3368-4a4e-b30c-83d6f988d047" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-authrntication-falied" doc:id="7a2d0939-8232-492b-bea0-92def15b63a1" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="4d8c47da-d6cb-4892-b550-b9119ca81020" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:MUTUAL_AUTHENTICATION_FAILED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="c0f3dd01-46bf-4386-9e84-887b49802453">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="9cafc429-2abe-41cc-8005-f60fa1f26282" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="ba4f4f0e-352f-4f99-a7c4-4740e6724dc5" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="0c7867b7-68b8-4213-943f-ad91932626ac" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-not-found" doc:id="2298d223-9646-430d-bdb5-580b53b788c2" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="48a15c18-f37a-4390-a598-9c7615795acb" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="3d4507ac-5919-44dc-bb01-9e06f5c80303">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="8edcc7f2-c524-4c3a-86a1-e22f2ce7c9f6" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="2e3687ac-e7a7-4d3b-b56b-498a4a12d1b4" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="b5b9881b-baae-4153-9e50-1d98658cf554" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-retry-exhausted" doc:id="21ad664d-5666-4118-8c81-8cf23b692e46" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="4068300f-c240-4d23-8f49-5cbf04239998" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:RETRY_EXHAUSTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="cad39ea8-1b4a-4ee6-9e33-041dff196ec9">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="cb1e94d8-7e46-4ffc-bee3-fa96931983f2" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="641da654-4d50-4d45-b21b-15187fea3d17" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Copy_of_Verify call" doc:id="3f4dd654-471d-46ef-9684-632f5a33e16c" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-timeout" doc:id="ccd6e534-aa7d-4489-92e2-9dbea0328659" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="4a60d7b4-0215-4a76-b956-cbabf59e18b9" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SALESFORCE:TIMEOUT" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="89b78fce-7985-4825-9a3e-58e0ee6130b9">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="6d3b635b-abba-4be5-9c71-506adb049c00" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="29d7e1ea-1304-4b85-a81c-4e6dd8a727dd" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="4dc19976-1d32-4325-a431-ec08a6fb7d29" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-stream-maximum" doc:id="8764d234-4e1d-4ae1-97e8-0d172d5a12d4" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="c0a53895-8b19-47cb-8f9d-a0ae02a4f9be" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="STREAM_MAXIMUM_SIZE_EXCEEDED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="e142c5dd-005e-4790-9169-dab1b7c72e03">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="226235e4-18d7-4b77-9354-dfd4d4aedab1" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="8c6e5be0-e924-4919-9347-1661c10b482d" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="c7de77b3-05b1-4bf7-9881-769fd7bee8b5" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sdfc-demo-example-error-any" doc:id="8aa98834-9092-4492-8040-3256edcd175a" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when create" doc:id="5adc46ab-0311-4fdb-b76a-28af1a842edc" processor="salesforce:create" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="03480c0b-8dbe-4191-8c7a-ecde37f5bab5">
+				<munit:payload value="#[ readUrl('classpath://examples/inputdetails.csv','application/csv') ]" mediaType="application/csv" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sdfc-demo-exampleFlow" doc:id="6f475ad9-cfac-4c7f-bef9-1400b10a03a4" name="sdfc-demo-exampleFlow" />
+			<munit-tools:sleep time="20" doc:name="Sleep" doc:id="d060bfed-9986-44e9-bea4-1f920ef143b3" timeUnit="SECONDS" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="59d0ca0c-52f4-4e7c-a2c2-f6c27acb980b" processor="salesforce:create" times="2" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+	
+
+
+</mule>

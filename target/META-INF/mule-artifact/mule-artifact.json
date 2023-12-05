@@ -1,0 +1,32 @@
+{
+  "configs": [
+    "sdfc-demo-example.xml",
+    "Global-config.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "com.mycompany:sdfc-demo-example:1.0.0-SNAPSHOT",
+  "minMuleVersion": "4.4.0",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "application-types.xml",
+        "Demo.xlsx",
+        "examples/Demo.csv",
+        "Global-config.xml",
+        "log4j2.xml",
+        "mule4.properties",
+        "namespace-4.properties",
+        "output/Demo.csv",
+        "sdfc-demo-example.xml"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}
